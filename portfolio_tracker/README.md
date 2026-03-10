@@ -21,7 +21,6 @@ Sends a **Telegram message** the moment your P&L first crosses into profit (🟢
 
 ```bash
 pip install -r requirements.txt
-pip install pytz   # timezone support
 ```
 
 ### 2. Create your `.env` file
@@ -115,8 +114,49 @@ To test that Telegram alerts work immediately, temporarily change a position's `
 
 ---
 
+---
+
+## Automated deployment — GitHub Actions (free, zero server)
+
+The tracker is deployed via **GitHub Actions**. It starts automatically every weekday at **09:15 IST**, runs throughout market hours, and exits automatically at **15:30 IST**. You pay nothing and manage no servers.
+
+### One-time setup (takes 5 minutes)
+
+**Step 1 — Add your Telegram credentials as GitHub Secrets**
+
+Go to your repository on GitHub → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+Add these two secrets:
+
+| Secret name | Value |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | Your bot token from @BotFather |
+| `TELEGRAM_CHAT_ID` | Your chat ID from @userinfobot |
+
+**Step 2 — Push your positions to `config.json`**
+
+Edit `portfolio_tracker/config.json` with your real positions and commit/push the file. The workflow reads this file on every run.
+
+**Step 3 — Verify the workflow is enabled**
+
+Go to the **Actions** tab on GitHub and confirm the `NSE Portfolio Tracker` workflow is listed and enabled. If this is a fork, you may need to click "Enable workflows" once.
+
+That's it. The tracker will auto-start at 09:15 IST every market day.
+
+### Manual trigger (for testing)
+
+On the **Actions** tab → select `NSE Portfolio Tracker` → **Run workflow** button.
+This runs the full tracker immediately and sends Telegram alerts if your positions cross green/red.
+
+### Viewing live logs
+
+Actions tab → click the running workflow → click the `track` job → you'll see the console summary table updating live.
+
+---
+
 ## Notes
 
 - NSE APIs are publicly accessible but may occasionally return errors during high traffic. Failures are logged and the tracker continues.
 - Alerts fire on **every** green↔red crossing, not just the first of the day.
-- To stop the tracker, press **Ctrl+C**.
+- To stop the tracker locally, press **Ctrl+C**.
+- GitHub Actions has a 6-hour job limit. The tracker covers 09:15–15:15 IST; the last 15 minutes of trading are not covered (the script itself exits at 15:30 IST if the job hasn't timed out).

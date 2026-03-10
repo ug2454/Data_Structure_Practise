@@ -299,8 +299,14 @@ def main():
     print("=" * 70)
 
     while True:
+        now = datetime.now(IST)
+
+        # Exit cleanly after market close (allows GitHub Actions job to finish)
+        if now.time() > MARKET_CLOSE and now.weekday() < 5:
+            print(f"[{now.strftime('%H:%M:%S IST')}] Market closed for today. Tracker exiting.")
+            break
+
         if not is_market_open():
-            now = datetime.now(IST)
             print(
                 f"[{now.strftime('%H:%M:%S IST')}] Market closed. "
                 "Waiting... (Ctrl+C to exit)"
