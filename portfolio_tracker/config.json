@@ -17,11 +17,11 @@
       "type": "option",
       "symbol": "NIFTY",
       "option_type": "CE",
-      "strike": 22000,
-      "expiry": "27-Mar-2026",
-      "lot_size": 75,
-      "quantity": 1,
-      "avg_price": 150.0
+      "strike": 24600,
+      "expiry": "30-Mar-2026",
+      "lot_size": 1,
+      "quantity": 65,
+      "avg_price": 296.66
     }
   ]
 }
