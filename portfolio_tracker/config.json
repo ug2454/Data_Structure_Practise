@@ -2,18 +2,6 @@
   "poll_interval_seconds": 10,
   "positions": [
     {
-      "type": "stock",
-      "symbol": "INFY",
-      "quantity": 10,
-      "avg_price": 1500.0
-    },
-    {
-      "type": "stock",
-      "symbol": "RELIANCE",
-      "quantity": 5,
-      "avg_price": 2800.0
-    },
-    {
       "type": "option",
       "symbol": "NIFTY",
       "option_type": "CE",
