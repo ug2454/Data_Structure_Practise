@@ -33,7 +33,16 @@ NSE_HEADERS = {
     ),
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.nseindia.com/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Referer": "https://www.nseindia.com/option-chain",
+    "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "X-Requested-With": "XMLHttpRequest",
 }
 
 # Shared session so NSE cookies are maintained
@@ -104,11 +113,21 @@ def fetch_option_price(
 
         # Empty records means session cookies are stale — reinitialize and retry once
         if not records:
-            print("[INFO] Empty option chain response; reinitializing NSE session...")
+            print(
+                f"[DEBUG] Empty records. Status={resp.status_code} "
+                f"Content-Type={resp.headers.get('Content-Type','?')} "
+                f"Body[:200]={resp.text[:200]!r}"
+            )
+            print("[INFO] Reinitializing NSE session and retrying...")
             _init_nse_session(force=True)
             resp = _nse_session.get(url, timeout=15)
             resp.raise_for_status()
             records = resp.json().get("records", {}).get("data", [])
+            if not records:
+                print(
+                    f"[DEBUG] Still empty after reinit. Status={resp.status_code} "
+                    f"Body[:200]={resp.text[:200]!r}"
+                )
         for row in records:
             if (
                 row.get("strikePrice") == strike
