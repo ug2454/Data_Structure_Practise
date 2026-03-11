@@ -102,7 +102,24 @@ def fetch_option_price(
             ):
                 ltp = row[option_type.upper()].get("lastPrice")
                 return float(ltp) if ltp is not None else None
-        print(f"[WARN] Option not found: {symbol} {strike} {option_type} {expiry}")
+
+        # Build diagnostic info for the warning
+        available_expiries = sorted(
+            {row.get("expiryDate", "") for row in records if row.get("expiryDate")},
+            key=lambda d: datetime.strptime(d, "%d-%b-%Y") if d else datetime.min,
+        )
+        strikes_for_expiry = sorted(
+            {
+                row.get("strikePrice")
+                for row in records
+                if row.get("expiryDate", "").lower() == expiry.lower()
+            }
+        )
+        print(
+            f"[WARN] Option not found: {symbol} {int(strike)} {option_type} {expiry}\n"
+            f"       Available expiries : {available_expiries}\n"
+            f"       Strikes for '{expiry}': {strikes_for_expiry or '(expiry not in chain)'}"
+        )
         return None
     except Exception as exc:
         print(f"[ERROR] fetch_option_price({symbol} {strike} {option_type}): {exc}")
