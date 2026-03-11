@@ -45,12 +45,19 @@ _nse_session_initialized = False
 # ---------------------------------------------------------------------------
 # NSE session initialization (get cookies)
 # ---------------------------------------------------------------------------
-def _init_nse_session():
+def _init_nse_session(force: bool = False):
     global _nse_session_initialized
-    if _nse_session_initialized:
+    if _nse_session_initialized and not force:
         return
     try:
+        # Visit homepage first to get base cookies
         _nse_session.get("https://www.nseindia.com/", timeout=10)
+        time.sleep(1)
+        # Visit the option chain page to get additional cookies NSE requires
+        _nse_session.get(
+            "https://www.nseindia.com/option-chain", timeout=10
+        )
+        time.sleep(1)
         _nse_session_initialized = True
     except Exception as exc:
         print(f"[WARN] Could not initialize NSE session: {exc}")
@@ -94,6 +101,14 @@ def fetch_option_price(
         resp = _nse_session.get(url, timeout=15)
         resp.raise_for_status()
         records = resp.json().get("records", {}).get("data", [])
+
+        # Empty records means session cookies are stale — reinitialize and retry once
+        if not records:
+            print("[INFO] Empty option chain response; reinitializing NSE session...")
+            _init_nse_session(force=True)
+            resp = _nse_session.get(url, timeout=15)
+            resp.raise_for_status()
+            records = resp.json().get("records", {}).get("data", [])
         for row in records:
             if (
                 row.get("strikePrice") == strike
